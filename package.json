@@ -1,0 +1,14 @@
+{
+  "name": "superlauncher",
+  "version": "1.0.0",
+  "description": "Gaming launcher para PC e Mac",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": Guidibernardinho,
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^30.0.0"
+  }
+}
