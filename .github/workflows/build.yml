@@ -4,25 +4,18 @@ on:
   push:
     tags:
       - "v*"
-  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest]
-
-    runs-on: ${{ matrix.os }}
+  build-windows:
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Configurar Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -31,39 +24,41 @@ jobs:
           python -m pip install --upgrade pip
           pip install PySide6 pyinstaller
 
-      - name: Build app
-        run: |
-          pyinstaller --onefile --windowed --name SuperLauncher main.py
+      - name: Build Windows
+        run: pyinstaller --onefile --windowed --name SuperLauncher main.py
 
-      - name: Compactar Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          powershell Compress-Archive -Path dist/SuperLauncher.exe -DestinationPath dist/SuperLauncher-Windows.zip
+      - name: Zip Windows
+        run: powershell Compress-Archive -Path dist/SuperLauncher.exe -DestinationPath dist/SuperLauncher-Windows.zip
 
-      - name: Compactar macOS
-        if: matrix.os == 'macos-latest'
+      - name: Release Windows
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/SuperLauncher-Windows.zip
+
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependências
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install PySide6 pyinstaller
+
+      - name: Build macOS
+        run: pyinstaller --onefile --windowed --name SuperLauncher main.py
+
+      - name: Zip macOS
         run: |
           cd dist
           zip -r SuperLauncher-macOS.zip SuperLauncher
 
-      - name: Upload artifact Windows
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: SuperLauncher-Windows
-          path: dist/SuperLauncher-Windows.zip
-
-      - name: Upload artifact macOS
-        if: matrix.os == 'macos-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: SuperLauncher-macOS
-          path: dist/SuperLauncher-macOS.zip
-
-      - name: Release GitHub
+      - name: Release macOS
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/*.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: dist/SuperLauncher-macOS.zip
