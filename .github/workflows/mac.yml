@@ -1,3 +1,4 @@
+# .github/workflows/mac.yml
 name: Build macOS SuperLauncher
 
 on:
@@ -31,12 +32,16 @@ jobs:
 
       - name: Build macOS APP
         run: |
-          pyinstaller --onefile --windowed --name SuperLauncher main.py
+          pyinstaller --windowed --name SuperLauncher main.py
 
-      - name: Compactar macOS
+      - name: Verificar build
+        run: |
+          ls -la dist
+
+      - name: Compactar macOS APP
         run: |
           cd dist
-          zip -r SuperLauncher-macOS.zip SuperLauncher
+          zip -r SuperLauncher-macOS.zip SuperLauncher.app
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
